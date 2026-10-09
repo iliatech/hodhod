@@ -1,0 +1,36 @@
+# Render Blueprint for the FastAPI API + managed PostgreSQL.
+# Deploy from repository root. Configure LLM_API_KEY in the Render dashboard.
+services:
+  - type: web
+    name: hodhod-api
+    runtime: python
+    rootDir: buildx_backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    plan: starter
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hodhod-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: APP_NAME
+        value: Hodhod Career Agent
+      - key: ENVIRONMENT
+        value: production
+      - key: LLM_PROVIDER
+        value: openai
+      - key: LLM_MODEL
+        value: gpt-4o-mini
+      - key: LLM_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://YOUR-VERCEL-DOMAIN.vercel.app
+
+databases:
+  - name: hodhod-db
+    plan: basic-256mb
+    databaseName: hodhod
+    user: hodhod
